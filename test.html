@@ -1,32 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-            <title>
-                Document
-            </title>
-            <script src="Canvas2Image.js">
-            </script>
-            <script src="Watermark.js">
-            </script>
-        </meta>
-    </head>
-    <body>
-    	  <canvas id="id"  />
-    </body>
-    <script>
-    console.log(Canvas2Image)
-	var isExist= true,
-    text= "仅用于办理住房公积金，他用无效。",
-    hex= "#000000",
-    rgb= { r: 0, g: 0, b: 0, a: 0.4 },
-    fontSize= 23,
-    watermarkHeight= 180,
-    watermarkWidth= 280,
-	fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${rgb.a})`;
-	var watermark = new Watermark(document.getElementById('id'));
-	console.log(watermark)
-	watermark.setOptions({ text, fillStyle, fontSize, watermarkWidth, watermarkHeight });
-    watermark.draw('example.jpg');
-    </script>
+<head>
+    <meta charset="utf-8">
+    <title>Document</title>
+    <script src="Canvas2Image.js"></script>
+    <script src="Watermark.js"></script>
+    <style>
+        #canvas-container {
+            border: 2px dashed #ccc;
+            width: 500px;
+            min-height: auto;
+            position: relative;
+            margin: 20px auto;
+            }
+        #canvas {
+            width: 100%;
+            height: 100%;
+        }
+        #download-btn {
+            display: block;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container" ondrop="dropHandler(event)" ondragover="dragOverHandler(event)">
+        <canvas id="canvas"></canvas>
+    </div>
+    <input type="file" id="file-input" style="display: none;" accept="image/*">
+    <button id="download-btn">Download watermaked image</button>
+</body>
+<script>
+    var isExist = true,
+        text = "Water Mark Text",
+        hex = "#000000",
+        rgb = { r: 0, g: 0, b: 0, a: 0.4 },
+        fontSize = 23,
+        watermarkHeight = 180,
+        watermarkWidth = 280,
+        fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${rgb.a})`;
+
+    var watermark = new Watermark(document.getElementById('canvas'));
+
+    watermark.setOptions({ text, fillStyle, fontSize, watermarkWidth, watermarkHeight });
+
+    function drawWatermark(imageUrl) {
+        watermark.draw(imageUrl);
+    }
+
+    function handleFiles(files) {
+        var file = files[0];
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            drawWatermark(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function dropHandler(event) {
+        event.preventDefault();
+        if (event.dataTransfer.items) {
+            for (var i = 0; i < event.dataTransfer.items.length; i++) {
+                if (event.dataTransfer.items[i].kind === 'file') {
+                    var file = event.dataTransfer.items[i].getAsFile();
+                    handleFiles([file]);
+                    break;
+                }
+            }
+        } else {
+            for (var i = 0; i < event.dataTransfer.files.length; i++) {
+                var file = event.dataTransfer.files[i];
+                handleFiles([file]);
+                break;
+            }
+        }
+    }
+
+    function dragOverHandler(event) {
+        event.preventDefault();
+    }
+
+
+    document.getElementById('canvas-container').addEventListener('click', function() {
+        document.getElementById('file-input').click();
+    });
+
+    document.getElementById('file-input').addEventListener('change', function() {
+        handleFiles(this.files);
+    });
+
+    document.getElementById('download-btn').addEventListener('click', function() {
+       Canvas2Image.saveAsJPEG(document.getElementById('canvas'));
+    });
+</script>
 </html>
